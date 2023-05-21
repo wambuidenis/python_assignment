@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  database:
+    image:  mysql
+    container_name: database
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpass
+      MYSQL_DATABASE: 'assignment'
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      start_period: 1s
+      interval: 1s
+      timeout: 1s
+      retries: 20
+    volumes:
+      - my-datavolume:/var/lib/mysql
+  app:
+    depends_on:
+      database:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+volumes:
+  my-datavolume:
