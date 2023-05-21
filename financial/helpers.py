@@ -39,7 +39,9 @@ def get_symbol(name: str) -> Optional[Symbol]:
     return Symbol.query.filter_by(symbol=name).first()
 
 
-def save_record(symbol: Symbol, date: str, open_price: float, close_price: float, volume: int) -> Optional[FinancialData]:
+def save_record(
+    symbol: Symbol, date: str, open_price: float, close_price: float, volume: int
+) -> Optional[FinancialData]:
     """
     will save the record related to the period
     :param symbol: The symbol of the record. (Symbol)
@@ -57,7 +59,9 @@ def save_record(symbol: Symbol, date: str, open_price: float, close_price: float
 
         # adding new records
         symbol = symbol.id
-        record = FinancialData(symbol, str_to_datetime(date), open_price, close_price, volume)
+        record = FinancialData(
+            symbol, str_to_datetime(date), open_price, close_price, volume
+        )
         db.session.add(record)
         db.session.commit()
         log.info("record added successfully")
@@ -97,7 +101,11 @@ def record_exists(symbol: int, date: str) -> FinancialData:
     :rtype: FinancialData
     """
     try:
-        return FinancialData.query.filter_by(symbol=symbol).filter_by(date=str_to_datetime(date)).first()
+        return (
+            FinancialData.query.filter_by(symbol=symbol)
+            .filter_by(date=str_to_datetime(date))
+            .first()
+        )
     except Exception as e:
         msg = f"Error occurred {e}"
         log.error(msg)
@@ -111,13 +119,15 @@ def str_to_datetime(date: str):
     :return: a date object from the string `date`
     """
     try:
-        return datetime.strptime(date, '%Y-%m-%d').date()
+        return datetime.strptime(date, "%Y-%m-%d").date()
     except Exception as e:
         log.error(f"error Parsing date [{e}]")
         raise TypeError("Wrong date format passed.")
 
 
-def paginator(symbol: str, start_date: str, end_date: str, limit: str, page: str) -> dict:
+def paginator(
+    symbol: str, start_date: str, end_date: str, limit: str, page: str
+) -> dict:
     """
     Fetch records from the database in a page-based approach
     :param symbol: Symbol or identifier for the records (str)
@@ -138,26 +148,35 @@ def paginator(symbol: str, start_date: str, end_date: str, limit: str, page: str
         page = int(page)
 
         if symbol_db is None:
-            return Response.summary(records, count, page, limit, pages, error=f"symbol `{symbol}` does not exist.")
-        count = FinancialData.query. \
-            filter(FinancialData.symbol == symbol_db.id). \
-            count()
+            return Response.summary(
+                records,
+                count,
+                page,
+                limit,
+                pages,
+                error=f"symbol `{symbol}` does not exist.",
+            )
+        count = FinancialData.query.filter(FinancialData.symbol == symbol_db.id).count()
 
         # there is a bug
         pages = ceil(count / limit)
-        error = f"the page requested `{page}` is above threshold" if page > pages else ""
+        error = (
+            f"the page requested `{page}` is above threshold" if page > pages else ""
+        )
 
         start_date = str_to_datetime(start_date)
         end_date = str_to_datetime(end_date)
         # Calculate the offset based on the page and limit
         offset = (page - 1) * limit
 
-        records = FinancialData.query. \
-            filter(FinancialData.symbol == symbol_db.id). \
-            filter(FinancialData.date >= start_date). \
-            filter(FinancialData.date <= end_date). \
-            limit(limit). \
-            offset(offset).all()
+        records = (
+            FinancialData.query.filter(FinancialData.symbol == symbol_db.id)
+            .filter(FinancialData.date >= start_date)
+            .filter(FinancialData.date <= end_date)
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
         if len(records) == 0:
             error = "no records in that filter"
 
@@ -188,30 +207,40 @@ def calculate(symbol: str, start_date: str, end_date: str) -> dict:
     average_daily_volume = 0
 
     try:
-
         start_date_parsed = str_to_datetime(start_date)
         end_date_parsed = str_to_datetime(end_date)
         symbol_db = get_symbol(symbol)
 
         if symbol_db is None:
-            return Response.summary(start_date=start_date, end_date=end_date, symbol=symbol,
-                                    error=f"symbol `{symbol}` not found", opts="sts")
+            return Response.summary(
+                start_date=start_date,
+                end_date=end_date,
+                symbol=symbol,
+                error=f"symbol `{symbol}` not found",
+                opts="sts",
+            )
 
-        records = FinancialData.query. \
-            filter(FinancialData.symbol == symbol_db.id). \
-            filter(FinancialData.date >= start_date_parsed). \
-            filter(FinancialData.date <= end_date_parsed). \
-            all()
+        records = (
+            FinancialData.query.filter(FinancialData.symbol == symbol_db.id)
+            .filter(FinancialData.date >= start_date_parsed)
+            .filter(FinancialData.date <= end_date_parsed)
+            .all()
+        )
 
         total = len(records)
 
         if total == 0:
-            return Response.summary(start_date=start_date, end_date=end_date, symbol=symbol,
-                                    error="no records for that time frame", opts="sts")
+            return Response.summary(
+                start_date=start_date,
+                end_date=end_date,
+                symbol=symbol,
+                error="no records for that time frame",
+                opts="sts",
+            )
 
         open_price_total, close_price_total, volume_total = [
             sum(getattr(record, attr) for record in records)
-            for attr in ['open_price', 'close_price', 'volume']
+            for attr in ["open_price", "close_price", "volume"]
         ]
         average_daily_open_price = round(open_price_total / total, ndigits=2)
         average_daily_close_price = round(close_price_total / total, ndigits=2)
@@ -226,10 +255,16 @@ def calculate(symbol: str, start_date: str, end_date: str) -> dict:
     except Exception as e:
         error = "internal error occurred"
         log.error(e)
-    return Response.summary(start_date=start_date, end_date=end_date, symbol=symbol,
-                            average_daily_open_price=average_daily_open_price,
-                            average_daily_close_price=average_daily_close_price,
-                            average_daily_volume=average_daily_volume, error=error, opts="sts")
+    return Response.summary(
+        start_date=start_date,
+        end_date=end_date,
+        symbol=symbol,
+        average_daily_open_price=average_daily_open_price,
+        average_daily_close_price=average_daily_close_price,
+        average_daily_volume=average_daily_volume,
+        error=error,
+        opts="sts",
+    )
 
 
 def param(name: str, required: bool = True) -> Optional[str]:
@@ -249,9 +284,9 @@ def save_finacial_record(date, data, symbol) -> dict:
     :param symbol: target fincacial symbol (str)
     :return: data in the parsed format (dict)
     """
-    open_price = data['1. open']
-    close_price = data['4. close']
-    volume = data['6. volume']
+    open_price = data["1. open"]
+    close_price = data["4. close"]
+    volume = data["6. volume"]
 
     res = {
         "symbol": symbol,
@@ -298,11 +333,16 @@ def get_raw_data(symbol):
         weekly_series = data["Time Series (Daily)"]
         dates = list(weekly_series.keys())
         save_symbol(symbol)
-        two_weeks = [save_finacial_record(date, weekly_series[date], symbol) for date in dates[:14]]
+        two_weeks = [
+            save_finacial_record(date, weekly_series[date], symbol)
+            for date in dates[:14]
+        ]
         return financial_data_schema.dump(two_weeks)
     except TypeError as e:
         log.error(e)
         return Response.summary(error=e.__str__(), opts="inf")
     except Exception as e:
         log.error(e)
-        return Response.summary(error="internal error occured. Please try again later.", opts="inf")
+        return Response.summary(
+            error="internal error occured. Please try again later.", opts="inf"
+        )

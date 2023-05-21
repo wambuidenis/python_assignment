@@ -9,14 +9,21 @@ from financial import db, ma
 
 class FinancialData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    symbol = db.Column(db.Integer, db.ForeignKey('symbol.id'))
+    symbol = db.Column(db.Integer, db.ForeignKey("symbol.id"))
     open_price = db.Column(db.Float, nullable=False)
     date = db.Column(db.Date, nullable=False)
     close_price = db.Column(db.Float, nullable=False)
     volume = db.Column(db.Integer, nullable=False)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, symbol: int, date: datetime.date, open_price: float, close_price: float, volume: int):
+    def __init__(
+        self,
+        symbol: int,
+        date: datetime.date,
+        open_price: float,
+        close_price: float,
+        volume: int,
+    ):
         self.symbol = symbol
         self.date = date
         self.open_price = open_price

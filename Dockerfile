@@ -31,6 +31,14 @@ EXPOSE 5000
 # make sure all messages always reach console
 ENV PYTHONUNBUFFERED=1
 
+# configurations
+ENV MYSQL_DATABASE=assignment
+ENV RAW_API_KEY=CGCXS9L8HHGAH0YC
+ENV DB_PASS=dbpass
+ENV DB_USER=dbuser
+ENV DB=assignment
+ENV DB_HOST=host.docker.internal
+
 # activate virtual environment
 ENV VIRTUAL_ENV=/home/myuser/venv
 ENV PATH="/home/myuser/venv/bin:$PATH"

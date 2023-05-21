@@ -6,6 +6,3 @@ try:
     [get_raw_data(symbol) for symbol in symbols]
 except TypeError as e:
     Response.summary(error=e.__str__(), opts="inf")
-
-
-

@@ -3,7 +3,7 @@ from financial.helpers import paginator, calculate, param
 from financial.response import Response
 
 
-@app.route("/api/financial_data", methods=['GET'])
+@app.route("/api/financial_data", methods=["GET"])
 def get_financial_data():
     # getting the params
     try:
@@ -17,7 +17,7 @@ def get_financial_data():
         return Response.summary(error=e.__str__())
 
 
-@app.route("/api/statistics", methods=['GET'])
+@app.route("/api/statistics", methods=["GET"])
 def get_statistics():
     try:
         start_date = param("start_date")
