@@ -13,10 +13,10 @@ futher the app aim to for integrity through to schema defination and
 code 
 
 #### Tech stack 
-The app is built using [flask]() to create a server and related
+The app is built using [flask](https://flask.palletsprojects.com/en/2.3.x/) to create a server and related
 applications routing, processing and validations;
 
-[MySQL]() is the database of choice. 
+[MySQL](https://www.mysql.com/) is the database of choice. 
 
 #### Installation 
 The applications requires the following software 
